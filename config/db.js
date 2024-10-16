@@ -1,19 +1,18 @@
 const mongoose = require('mongoose');
-// const redis = require('redis');
+const redis = require('redis');
 const session = require('express-session');
-// const connectRedis = require('connect-redis').default;
+const RedisStore = require('connect-redis').default;
 
 // Create a Redis client and enable legacy mode for Redis v4+
-// const redisClient = redis.createClient({
-//     url: process.env.REDIS_URL,
-//     legacyMode: true, // Ensures compatibility with Redis v4
-// });
+const redisClient = redis.createClient({
+    url: process.env.REDIS_URL,
+    legacyMode: true,          
+});
 
-// redisClient.connect().catch(console.error);
+// Connect Redis client
+redisClient.connect().catch((err) => console.error('Redis connection error:', err));
 
-// Initialize Redis Store
-// const RedisStore = connectRedis(session);
-
+// Initialize MongoDB and Redis connections
 const connectDB = async () => {
     try {
         // Connect to MongoDB
@@ -23,16 +22,22 @@ const connectDB = async () => {
         });
         console.log('MongoDB connected');
 
-        // Handle Redis connection
-        // redisClient.on('connect', () => {
-        //     console.log('Redis connected');
-        // });
+        // Handle Redis connection status
+        redisClient.on('ready', () => {
+            console.log('Redis connected');
+        });
+
+        redisClient.on('error', (err) => {
+            console.error('Redis error:', err);
+        });
 
         // Return both the Redis client and Redis store
-        // return { redisClient, RedisStore };
+        const store = new RedisStore({ client: redisClient });
+
+        return { redisClient, store };
     } catch (err) {
         console.error('Error connecting to the database:', err);
-        process.exit(1);
+        process.exit(1);  // Exit the process with failure code
     }
 };
 
