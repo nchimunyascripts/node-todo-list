@@ -106,7 +106,13 @@ Ensure you have the following software installed:
 Start the application:
 
 ```bash
-npm start
+npm run start
+```
+
+Or to run the application with nodemon
+
+```bash
+npm run dev
 ```
 
 The server will run on `http://localhost:5000`.
